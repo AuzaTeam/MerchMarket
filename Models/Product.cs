@@ -9,7 +9,7 @@ namespace backend.Models
         public required string Name { get; set; }
         public required string Description { get; set; }
         public required decimal Price { get; set; }
-        // public List<IFormFile> Image { get; set; }
-        public ICollection<Image> Image { get; set; } = new List<Image>();
+        
+        public required ICollection<string> Size { get; set; }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using backend.Database;
+using static Backend.DTOs.AuthDto;
 
 namespace Backend;
 
@@ -11,7 +12,16 @@ public class Startup
         services.ConfigureApplicationCookie(options =>
         {
             options.Cookie.HttpOnly = true;
-            options.ExpireTimeSpan = TimeSpan.FromDays(30); // Время жизни куки-файла
+            options.ExpireTimeSpan = TimeSpan.FromDays(30); 
+        });
+        services.AddCors(options =>
+        {
+            
+            options.AddPolicy(name: "AllowAllOrigins",
+                              builder =>
+                              {
+                                  builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+                              });
         });
     }
 

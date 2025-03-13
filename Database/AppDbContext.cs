@@ -11,13 +11,9 @@ public class AppDbContext : DbContext
     }
     public DbSet<Product> Products { get; set; }
     public DbSet<User> Users { get; set; }
-    public DbSet<Image> Images { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Product>()
-            .HasMany(p => p.Image)
-            .WithOne(i => i.Product)
-            .HasForeignKey(i => i.ProductId);
+        modelBuilder.Entity<User>().HasIndex(e => e.Email).IsUnique();
     }
 }

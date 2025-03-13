@@ -1,12 +1,11 @@
-﻿using System.Security.Claims;
+﻿
 using System.Security.Cryptography;
 using System.Text;
 using backend.Database;
 using backend.Models;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
+using Backend.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using static Backend.DTOs.AuthDto;
 
 namespace backend.Controllers
 {
@@ -15,69 +14,54 @@ namespace backend.Controllers
     public class AuthController : ControllerBase
     {
         private readonly AppDbContext _dbContext;
-
-        public AuthController(AppDbContext dbContext)
+        private readonly JwtService _jwtService;
+        public AuthController(AppDbContext dbContext, JwtService jwtService)
         {
             _dbContext = dbContext;
+            _jwtService = jwtService;
         }
+        
         private static string HashPasswd(string str)
         {
-            using var sha256 = SHA256.Create();
-            var hashedBytesSha256 = sha256.ComputeHash(Encoding.UTF8.GetBytes(str));
+            var hashedBytesSha256 = SHA256.HashData(Encoding.UTF8.GetBytes(str));
             return Convert.ToBase64String(hashedBytesSha256);
         }
-        [HttpPost("regist")]
-        public async Task<IActionResult> RegisterUser([FromBody] User vUser)
+        [HttpPost("register")]
+        public async Task<ActionResult<AuthResponseDto>> Register([FromForm]RegisterDto registerDto)
         {
-            if (_dbContext.Users.Any(n => n.Email == vUser.Email))
+            if (_dbContext.Users.Any(u => u.Email == registerDto.Email))
             {
-                return BadRequest(new {mess = "Пользователь с таким email уже существует" });
+                return BadRequest(new { mess = "User already exists" });
             }
 
-            var hashedPassword = HashPasswd(vUser.Passwd);
-            
-            var newUser = new User
+            var user = new User
             {
-                Id = Guid.NewGuid(),
-                Email = vUser.Email,
-                Passwd = hashedPassword,
-                RememberMe = vUser.RememberMe
+                Email = registerDto.Email,
+                Passwd = HashPasswd(registerDto.Password),
             };
-            
-            await _dbContext.Users.AddAsync(newUser);
+
+            _dbContext.Users.Add(user);
             await _dbContext.SaveChangesAsync();
-            
-            return Ok(new { message = "Регистрация прошла успешно." });
-        }
-        [HttpPost("login")] 
-        public async Task<IActionResult> LogInUser([FromBody]User lUser, bool rememberMe)
-        {
-            var user = await _dbContext.Users.FirstAsync(u => u.Email == lUser.Email);
-            
-            if (string.IsNullOrEmpty(user.Email))
-            {
-                return Ok(new { status = false, mes = "Error null" }); 
+
+            var token = _jwtService.GenerateToken(user);
+            return new AuthResponseDto { Token = token };
             }
 
-            var userPasswd = HashPasswd(lUser.Passwd);
-            user.RememberMe = rememberMe;
-            user.LogIn = true;
-            await _dbContext.SaveChangesAsync();
-            
-            return userPasswd == user.Passwd ? Ok(new { user.LogIn, rem = rememberMe, mess ="success"}) : Ok(new {mess = "fail"});
-        }
-
-        [HttpPost("logout")]
-        public async Task<IActionResult> LogOut(User lUser)
+        [HttpPost("login")]
+        public ActionResult<AuthResponseDto> Login([FromForm]LoginDto loginDto)
         {
-            var user = await _dbContext.Users.FirstAsync(u => u.Email == lUser.Email);
-            if (!user.RememberMe) return Ok(new { mess = "fail, your not auth" });
-            user.RememberMe = false;
-            user.LogIn = false;
-            await _dbContext.SaveChangesAsync();
-            return Ok(new { user.LogIn, user.RememberMe });
+            var user = _dbContext.Users.FirstOrDefault(u => u.Email == loginDto.Email);
+            var hPs = HashPasswd(loginDto.Password);
+            if (user == null || !(user.Passwd == hPs))
+            {
+                return Unauthorized(new { mess = "Invalid credentials" });
+            }
 
+            var token = _jwtService.GenerateToken(user);
+            
+            return new AuthResponseDto { Token = token };
         }
+
     }
     
 }

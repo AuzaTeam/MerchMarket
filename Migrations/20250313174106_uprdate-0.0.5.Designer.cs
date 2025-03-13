@@ -12,8 +12,8 @@ using backend.Database;
 namespace Backend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250310141229_uprgadeModel-0.1")]
-    partial class uprgadeModel01
+    [Migration("20250313174106_uprdate-0.0.5")]
+    partial class uprdate005
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,29 +24,6 @@ namespace Backend.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
-
-            modelBuilder.Entity("backend.Models.Image", b =>
-                {
-                    b.Property<Guid>("ImageId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<byte[]>("ImageData")
-                        .IsRequired()
-                        .HasColumnType("bytea");
-
-                    b.Property<string>("ImageName")
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("ProductId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("ImageId");
-
-                    b.HasIndex("ProductId");
-
-                    b.ToTable("Images");
-                });
 
             modelBuilder.Entity("backend.Models.Product", b =>
                 {
@@ -65,9 +42,9 @@ namespace Backend.Migrations
                     b.Property<decimal>("Price")
                         .HasColumnType("numeric");
 
-                    b.PrimitiveCollection<int[]>("Size")
+                    b.PrimitiveCollection<string[]>("Size")
                         .IsRequired()
-                        .HasColumnType("integer[]");
+                        .HasColumnType("text[]");
 
                     b.HasKey("ProductId");
 
@@ -84,38 +61,20 @@ namespace Backend.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<bool>("LogIn")
-                        .HasColumnType("boolean");
-
                     b.Property<string>("Passwd")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<bool>("RememberMe")
-                        .HasColumnType("boolean");
-
-                    b.Property<int>("Role")
-                        .HasColumnType("integer");
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Email")
+                        .IsUnique();
+
                     b.ToTable("Users");
-                });
-
-            modelBuilder.Entity("backend.Models.Image", b =>
-                {
-                    b.HasOne("backend.Models.Product", "Product")
-                        .WithMany("Image")
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Product");
-                });
-
-            modelBuilder.Entity("backend.Models.Product", b =>
-                {
-                    b.Navigation("Image");
                 });
 #pragma warning restore 612, 618
         }

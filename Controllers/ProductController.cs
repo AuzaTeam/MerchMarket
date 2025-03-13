@@ -1,6 +1,8 @@
 ﻿
 using backend.Database;
 using backend.Models;
+using Backend.DTOs;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,39 +14,30 @@ namespace backend.Controllers
     {
         private readonly AppDbContext _dbContext;
 
-        public ProductController(AppDbContext dbContext)
-        {
-            _dbContext = dbContext;
-        }
+        public ProductController(AppDbContext dbContext) => _dbContext = dbContext;
 
-        // GET: api/<ProductController>
         [HttpGet]
         public async Task<IEnumerable<Product>> GetAllProducts()
         {
-            var allProd = await _dbContext.Products
-                .Include(e => e.Image)
-                .ToListAsync();
+            var allProd = await _dbContext.Products.ToListAsync();
+                
             var productResponses = allProd.Select(product => new Product
             {
                 ProductId = product.ProductId,
                 Name = product.Name,
                 Description = product.Description,
                 Price = product.Price,
-                Image = product.Image.Select(img => new Image
-                {
-                    ImageData = img.ImageData
-                }).ToList()
+                Size = [..product.Size],
+               
             }).ToList();
             
             return productResponses;
         }
 
-        // GET api/<ProductController>/5
         [HttpGet("{id}")]
         public async Task<IActionResult> GetProductById(Guid id)
         {
             var product = await _dbContext.Products
-                .Include(p => p.Image)
                 .FirstAsync(p => p.ProductId == id);
 
             var productResponse = new Product
@@ -53,65 +46,35 @@ namespace backend.Controllers
                 Name = product.Name,
                 Description = product.Description,
                 Price = product.Price,
-                Image = product.Image.Select(img => new Image
-                {
-                    
-                    ImageName = img.ImageName,
-                    ImageData = img.ImageData,
-                    
-                }).ToList()
+                Size = [..product.Size],
             };
 
             return Ok(productResponse);
         }
 
-        // POST api/<ProductController>
+        [Authorize(Roles = "Admin")]
         [HttpPost]
-        public async Task<IActionResult> CreateProduct([FromForm]Product dto, IFormFile[] files)
+        public async Task<IActionResult> CreateProduct([FromForm] ProdDto prodDto )
         {
-            var newProduct = new Product 
-            {
-                ProductId = Guid.NewGuid(),
-                Name = dto.Name,
-                Description = dto.Description,
-                Price = dto.Price,
-            };
-            foreach (var file in files)
-            {
-                using var memoryStream = new MemoryStream();
-                await file.CopyToAsync(memoryStream);
-                var imageEntity = new Image
-                {
-                    // ImageId = Guid.NewGuid(),
-                    ImageData = memoryStream.ToArray(),
-                    ImageName = file.FileName,
-                    // ProductId = newProduct.ProductId
-                };
-                newProduct.Image.Add(imageEntity);
-            }
-            
-            _dbContext.Products.Add(newProduct);
-            await _dbContext.SaveChangesAsync();
-
-            return Ok("Created product");
-        }
-        // PUT api/<ProductController>
-        [HttpPut]
-        public async Task<IActionResult> PutProductById([FromBody] Product vProduct)
-        {
-            var existingProduct = await _dbContext.Products.FindAsync(vProduct.ProductId);
-    
-            if (existingProduct == null)
-            {
-                return NotFound();
-            }
-
-            _dbContext.Entry(existingProduct).CurrentValues.SetValues(vProduct);
-
             try
             {
+                var newProduct = new Product
+                {
+                    ProductId = Guid.NewGuid(),
+                    Name = prodDto.Name,
+                    Description = prodDto.Desc,
+                    Price = prodDto.Price,
+                    Size = [.. prodDto.Size],
+                };
+
+                _dbContext.Products.Add(newProduct);
                 await _dbContext.SaveChangesAsync();
-                return Ok();
+
+                return Ok(new { mess = "Товар создан" });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { message = "Недостаточно прав для выполнения данной операции." });
             }
             catch (Exception ex)
             {
@@ -119,7 +82,7 @@ namespace backend.Controllers
             }
         }
 
-        // DELETE api/<ProductController>/5
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task DeleteProduct(Guid id)
         {

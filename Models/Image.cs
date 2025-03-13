@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using Microsoft.EntityFrameworkCore;
 
 namespace backend.Models
 {
@@ -8,10 +7,9 @@ namespace backend.Models
         [Key]
         public Guid ImageId { get; set; }
         public required byte[] ImageData { get; set; }
-        public string? ImageName { get; internal init; }
+        public string? ImageName { get;  set; }
         
         public Guid ProductId { get; set; }
-        
         public Product? Product { get; set; }
     }
 }

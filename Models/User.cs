@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿//using Backend.Enums;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace backend.Models
 {
@@ -15,12 +17,7 @@ namespace backend.Models
         [DataType(DataType.Password)]
         [Display(Name = "Password")]
         public required string Passwd { get; set; }
-
-        [Display(Name = "RememberMe")]
-        public bool RememberMe { get; set; }
-
-        [Display(Name = "Login")]
-        public bool LogIn { get; set; }
+        public string Role { get; set; } = "User";
 }
 
 }
