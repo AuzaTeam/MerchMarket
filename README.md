@@ -51,8 +51,8 @@ Backend/
     │   └───ConfigureSwaggerOptions.cs
     │
     │───Utils/..
-		│───appsettings.Development.json
-		└───appsettings.json
+    │───appsettings.Development.json
+    └───appsettings.json
 ```
 
 ## Обязательно
