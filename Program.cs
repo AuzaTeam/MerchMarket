@@ -8,6 +8,7 @@ using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using Backend.Swagger;
 
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -23,9 +24,15 @@ builder.Services.AddDbContext<AppDbContext>(optionsBuilder =>
 });
 // Регистрируем сервис JWT
 builder.Services.AddScoped<JwtService>();
-
+builder.Services.AddCors(options => {
+    options.AddPolicy(name: "AllowedHosts",
+                      policy =>
+                      {
+                          policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
+                      });
+});
 // Настраиваем аутентификацию
-builder.Services.AddAuthentication(x => 
+builder.Services.AddAuthentication(x =>
     {
         x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
         x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -46,11 +53,13 @@ builder.Services.AddAuthentication(x =>
 
         };
     });
+
 builder.Services.AddAuthorizationBuilder();
-//builder.Services.AddAuthorizationBuilder()
-//    .AddPolicy(IdentityData.AdminUserPolicyName, p => p.RequireClaim(IdentityData.AdminUserClaimName, "true"));
+
 
 var app = builder.Build();
+
+app.UseCors("AllowedHosts");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -60,6 +69,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
 
 app.UseAuthentication();
 app.UseAuthorization();
