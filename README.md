@@ -78,3 +78,5 @@ Backend/
 Выполните следующую команду для запуска сервера бэкенда: `dotnet run`
 
 ### После запуска вас сразу же перекинет на локальный хост:
+
+![image](https://github.com/user-attachments/assets/dad46854-b9a2-403c-a55d-af5be5adf6aa)
