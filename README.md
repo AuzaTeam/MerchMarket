@@ -14,8 +14,6 @@
 
 ```
 Backend/
-    │   Backend.sln
-    │   Backend.csproj
     │
     ├───Controllers/
     │   ├───AuthController.cs
@@ -51,6 +49,8 @@ Backend/
     │   └───ConfigureSwaggerOptions.cs
     │
     │───Utils/..
+    │   Backend.sln
+    │   Backend.csproj
     │───appsettings.Development.json
     └───appsettings.json
 ```
