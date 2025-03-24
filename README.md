@@ -68,7 +68,8 @@ Backend/
 
 <h3>Запуск проекта:</h3>
 
-Для запуска проекта в `Visual Studio` просто нажмите кнопку http/https/IIS Express
+Для запуска проекта в `Visual Studio` просто нажмите кнопку http/https/IIS Express ![image](https://github.com/user-attachments/assets/43bd3748-01cc-4ef3-a269-92513c94d7f0)
+
 
 ### Иначе, если вы делаете через консоль
 
