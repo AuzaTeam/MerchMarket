@@ -45,12 +45,13 @@ npm run serve
 ### 📦 Бэкенд:
 ```bash
 cd Back
-python -m venv venv
-.\venv\Scripts\activate
-pip install -r requirements.txt
-uvicorn app.main:app
-or
-fastapi dev main.py
+if visual studio -> http/https/iis express
+else
+{
+  dotnet restore
+  dotnet build
+  dotnet run
+}
 ```
 
 ## 📬 Контакты
